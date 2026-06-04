@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Roadmap & Budget Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<style>
+:root {
+  --black: #000000;
+  --black-mid: #1a1a1a;
+  --black-soft: #2e2e2e;
+  --rose: #F36C7B;
+  --rose-light: #FFCFD4;
+  --rose-dark: #d9566a;
+  --gray: #BDBDBD;
+  --gray-light: #E3E3E3;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --bg: #F5F5F5;
+  --card: #ffffff;
+  --border: #E3E3E3;
+  --text: #000000;
+  --text-mid: #3a3a3a;
+  --text-light: #767676;
+  --font: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 14px; }
+
+/* === SIDEBAR === */
+#sidebar { width: 216px; background: var(--black); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-logo { padding: 22px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-logo .modop-wordmark { font-family: var(--font); font-size: 13px; font-weight: 800; line-height: 1; letter-spacing: -0.01em; color: white; margin-bottom: 10px; }
+.sidebar-logo .modop-wordmark span { display: block; }
+.sidebar-logo .rose-bar { width: 24px; height: 2px; background: var(--rose); margin-bottom: 10px; }
+.sidebar-logo .app-sub { font-size: 10px; font-weight: 500; opacity: 0.45; letter-spacing: 0.06em; text-transform: uppercase; }
+#sidebar nav { flex: 1; padding: 10px 0; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: rgba(255,255,255,0.55); cursor: pointer; font-size: 12.5px; font-weight: 500; border-left: 3px solid transparent; transition: all 0.15s; user-select: none; letter-spacing: 0.01em; }
+.nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9); }
+.nav-item.active { background: rgba(243,108,123,0.12); color: white; border-left-color: var(--rose); }
+.nav-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.nav-item.active .nav-num { background: var(--rose); color: white; }
+.nav-item.done .nav-num { background: var(--success); }
+.nav-item.done .nav-num::after { content: '✓'; }
+.sidebar-footer { padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10px; font-weight: 500; opacity: 0.35; letter-spacing: 0.05em; text-transform: uppercase; }
+
+/* === MAIN === */
+#main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+#topbar { background: white; padding: 14px 26px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+#topbar h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; color: var(--black); }
+.topbar-meta { font-size: 12px; color: var(--text-light); text-align: right; font-weight: 500; }
+.topbar-meta strong { color: var(--text); font-weight: 700; }
+#content { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* === CARDS === */
+.card { background: white; border-radius: 6px; border: 1px solid var(--border); padding: 20px; margin-bottom: 18px; }
+.card-title { font-size: 13.5px; font-weight: 700; margin-bottom: 14px; color: var(--black); display: flex; align-items: center; justify-content: space-between; letter-spacing: -0.01em; }
+.card-title-left { display: flex; align-items: center; gap: 8px; }
+
+/* === FORMS === */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 14px; }
+.form-grid-2 { grid-template-columns: 1fr 1fr; }
+.form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.07em; }
+input[type="text"], input[type="number"], input[type="date"], select, textarea {
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 4px;
+  font-family: var(--font); font-size: 13px; font-weight: 500; color: var(--text); background: white;
+  transition: border-color 0.15s; width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--rose); box-shadow: 0 0 0 2px rgba(243,108,123,0.1); }
+textarea { resize: vertical; min-height: 52px; }
+
+/* === BUTTONS === */
+.btn { padding: 7px 14px; border-radius: 4px; border: none; cursor: pointer; font-family: var(--font); font-size: 12.5px; font-weight: 600; transition: all 0.15s; display: inline-flex; align-items: center; gap: 5px; line-height: 1.4; letter-spacing: 0.01em; }
+.btn-primary { background: var(--rose); color: white; }
+.btn-primary:hover { background: var(--rose-dark); }
+.btn-navy { background: var(--black); color: white; }
+.btn-navy:hover { background: var(--black-mid); }
+.btn-outline { background: white; color: var(--text); border: 1px solid var(--border); }
+.btn-outline:hover { background: var(--bg); border-color: var(--gray); }
+.btn-ghost { background: transparent; color: var(--text-light); border: 1px solid transparent; padding: 5px 8px; }
+.btn-ghost:hover { background: var(--bg); color: var(--text); }
+.btn-danger { background: #fff5f5; color: var(--danger); border: 1px solid #fecdd3; }
+.btn-danger:hover { background: #fee2e2; }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: #15803d; }
+.btn-sm { padding: 5px 10px; font-size: 11.5px; }
+.btn-lg { padding: 10px 22px; font-size: 14px; }
+
+/* === TABLES === */
+.table-wrap { overflow-x: auto; }
+table.data-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.data-tbl th { background: var(--bg); padding: 8px 10px; text-align: left; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-light); border-bottom: 2px solid var(--border); white-space: nowrap; }
+table.data-tbl td { padding: 7px 10px; border-bottom: 1px solid #efefef; vertical-align: middle; }
+table.data-tbl tr:last-child td { border-bottom: none; }
+table.data-tbl tr:hover td { background: #fafafa; }
+table.data-tbl input, table.data-tbl select { padding: 4px 7px; font-size: 12px; min-width: 60px; }
+
+/* === BADGES === */
+.badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 3px; font-size: 10.5px; font-weight: 700; white-space: nowrap; letter-spacing: 0.02em; }
+.badge-blue { background: #F5F7FF; color: #3B5BDB; }
+.badge-green { background: #f0fdf4; color: #16a34a; }
+.badge-orange { background: #FFF8F0; color: #C47A2B; }
+.badge-red { background: var(--rose-light); color: var(--rose-dark); }
+.badge-gray { background: var(--bg); color: var(--text-light); }
+
+/* === ROADMAP BUILDER === */
+.rm-tabs { display: flex; gap: 0; margin-bottom: 18px; border-bottom: 2px solid var(--border); }
+.rm-tab { padding: 9px 20px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-light); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; letter-spacing: 0.01em; }
+.rm-tab.active { color: var(--black); border-bottom-color: var(--rose); }
+.rm-tab:hover { color: var(--text-mid); }
+
+.phase-block { border: 1px solid var(--border); border-radius: 6px; margin-bottom: 14px; overflow: hidden; }
+.phase-block-header { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: var(--bg); border-bottom: 1px solid var(--border); }
+.phase-color-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.phase-name-input { border: none; background: transparent; font-size: 13.5px; font-weight: 700; color: var(--text); font-family: var(--font); flex: 1; padding: 0; }
+.phase-name-input:focus { outline: none; }
+.phase-block-body { padding: 14px; }
+
+.epic-row { display: grid; grid-template-columns: 1fr 140px 200px 34px; gap: 8px; align-items: center; margin-bottom: 8px; padding: 8px 10px; background: var(--bg); border-radius: 4px; border: 1px solid transparent; }
+.epic-row:hover { border-color: var(--border); }
+
+/* === GANTT === */
+.gantt-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; }
+.gantt-grid { display: grid; min-width: 900px; font-size: 11.5px; }
+.gantt-row { display: contents; }
+.gantt-cell { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 4px 6px; display: flex; align-items: center; min-height: 30px; background: white; }
+.gantt-cell.label { position: sticky; left: 0; z-index: 2; background: white; min-width: 180px; font-weight: 600; border-right: 2px solid var(--border); }
+.gantt-cell.header { background: var(--black); color: white; font-weight: 700; font-size: 11px; justify-content: center; }
+.gantt-cell.sprint-hdr { background: var(--bg); color: var(--text-light); font-size: 10px; font-weight: 700; text-transform: uppercase; justify-content: center; border-bottom: 2px solid var(--border); letter-spacing: 0.04em; }
+.gantt-cell.month-hdr { background: var(--black-mid); color: white; font-size: 11px; font-weight: 700; justify-content: center; letter-spacing: 0.03em; }
+.gantt-bar-cell { padding: 4px; }
+.gantt-bar { height: 20px; border-radius: 3px; display: flex; align-items: center; padding: 0 6px; color: white; font-size: 10px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gantt-epic-row .gantt-cell.label { font-size: 12px; color: var(--text-light); padding-left: 24px; font-weight: 500; }
+.gantt-epic-row .gantt-cell { background: #fafafa; }
+.gantt-phase-row .gantt-cell.label { font-weight: 700; font-size: 12.5px; color: var(--text); background: var(--bg); }
+.gantt-phase-row .gantt-cell { background: var(--bg); }
+
+/* === BUDGET === */
+.budget-phase { border: 1px solid var(--border); border-radius: 6px; margin-bottom: 18px; overflow: hidden; }
+.budget-phase-header { padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.budget-phase-header-left { display: flex; align-items: center; gap: 10px; }
+.budget-phase-title { font-weight: 700; font-size: 14px; letter-spacing: -0.01em; }
+.budget-phase-meta { font-size: 12px; color: var(--text-light); }
+.budget-totals { display: flex; gap: 16px; font-size: 12.5px; }
+.budget-total-item { text-align: right; }
+.budget-total-label { font-size: 10px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+.budget-total-value { font-weight: 800; font-size: 14px; color: var(--text); }
+
+.resource-table-scroll { overflow-x: auto; }
+.resource-row-grid { display: grid; grid-template-columns: 150px 110px 130px 100px 68px 55px 58px 55px 75px 75px 35px 32px; gap: 5px; align-items: center; padding: 6px 10px; border-bottom: 1px solid #f0f0f0; min-width: 1010px; }
+.resource-row-grid:last-child { border-bottom: none; }
+.resource-row-grid:hover { background: #fafafa; }
+.resource-header { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-light); padding: 6px 10px; border-bottom: 2px solid var(--border); background: var(--bg); min-width: 1010px; }
+.calc-val { font-size: 12.5px; font-weight: 700; color: var(--text); text-align: right; }
+.calc-sub { font-size: 10px; color: var(--text-light); text-align: right; }
+.sla-yes { color: var(--danger); font-weight: 700; font-size: 11px; }
+.sla-dash { color: var(--text-light); font-size: 11px; }
+
+/* === EXPORT === */
+.export-hero { background: var(--black); color: white; border-radius: 6px; padding: 40px 36px; text-align: center; margin-bottom: 20px; position: relative; overflow: hidden; }
+.export-hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--rose); }
+.export-hero h2 { font-size: 24px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em; }
+.export-hero h2 span { color: var(--rose); }
+.export-hero p { opacity: 0.55; font-size: 13px; font-weight: 500; margin-bottom: 26px; }
+.stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.stat-box { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 14px 18px; flex: 1; min-width: 120px; }
+.stat-box .sv { font-size: 20px; font-weight: 800; color: var(--black); letter-spacing: -0.02em; }
+.stat-box .sl { font-size: 10px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
+
+/* === UTILS === */
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.mb-3 { margin-bottom: 12px; }
+.mb-4 { margin-bottom: 16px; }
+.text-muted { color: var(--text-light); font-size: 12.5px; font-weight: 500; }
+.text-sm { font-size: 12px; }
+.text-right { text-align: right; }
+.fw-bold { font-weight: 700; }
+.empty-state { text-align: center; padding: 32px 20px; color: var(--text-light); }
+.empty-icon { font-size: 36px; margin-bottom: 8px; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+.inline-note { font-size: 11.5px; font-weight: 500; color: var(--text-light); display: flex; align-items: center; gap: 4px; padding: 8px 12px; background: var(--rose-light); border-radius: 4px; border-left: 3px solid var(--rose); margin-bottom: 14px; }
+/* Epic dependency rows */
+.epic-deps-section { padding-left: 30px; margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+.epic-dep-row { display: flex; align-items: center; gap: 6px; }
+/* Staff picker layout */
+.staff-layout { display: flex; gap: 20px; align-items: flex-start; }
+.role-picker-panel { width: 260px; flex-shrink: 0; }
+.role-picker-scroll { max-height: 560px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+.role-picker-group-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-light); margin-bottom: 4px; }
+.role-picker-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 4px; border: 1.5px solid var(--border); cursor: pointer; transition: border-color 0.15s, background 0.15s; background: var(--card); }
+.role-picker-item:hover { border-color: var(--rose); background: var(--rose-light); }
+.role-picker-item.added { border-color: var(--rose); background: var(--rose-light); }
+.role-picker-name { flex: 1; font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.role-picker-rate { font-size: 11px; color: var(--text-light); font-weight: 500; white-space: nowrap; }
+.role-picker-check { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; background: var(--border); color: var(--text-light); transition: background 0.15s, color 0.15s; }
+.role-picker-item.added .role-picker-check { background: var(--rose); color: #fff; }
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--black); color: white; padding: 10px 18px; border-radius: 4px; font-size: 13px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 20px rgba(0,0,0,0.25); animation: toastin 0.25s ease; border-left: 3px solid var(--rose); }
+@keyframes toastin { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <div class="rose-bar"></div>
+    <div class="app-name">Roadmap & Budget</div>
+    <div class="app-sub">Project Planning Tool</div>
+  </div>
+  <nav id="sidebar-nav">
+    <div class="nav-item active" data-view="setup"><span class="nav-num">1</span> Project Setup</div>
+    <div class="nav-item" data-view="roadmap"><span class="nav-num">2</span> Roadmap</div>
+    <div class="nav-item" data-view="staff"><span class="nav-num">3</span> Staff</div>
+    <div class="nav-item" data-view="budget"><span class="nav-num">4</span> Budget</div>
+    <div class="nav-item" data-view="export"><span class="nav-num">5</span> Export</div>
+  </nav>
+  <div class="sidebar-footer">Mod Op Internal Tool</div>
+</div>
+
+<div id="main">
+  <div id="topbar">
+    <h1 id="page-title">Project Setup</h1>
+    <div class="topbar-meta" id="topbar-meta"></div>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+// ============================================================
+// CONSTANTS
+// ============================================================
+const PHASE_COLORS = ['#54AAAA','#F3B05B','#8E7CC3','#99B7E8','#88AB71','#AF5B77','#F36C7B','#6B7F94','#333333'];
+
+const DURATION_OPTIONS = [
+  {v:0.5,l:'½ Sprint'},{v:1,l:'1 Sprint'},{v:1.5,l:'1½ Sprints'},
+  {v:2,l:'2 Sprints'},{v:2.5,l:'2½ Sprints'},{v:3,l:'3 Sprints'},
+  {v:4,l:'4 Sprints'},{v:5,l:'5 Sprints'},{v:6,l:'6 Sprints'},
+];
+
+const DEFAULT_STAFF = [
+  {id:'s1',group:'Executive',position:'CTO',resource:'Tessa Burg',targetRate:350,lowRate:300,highRate:400},
+  {id:'s2',group:'Executive',position:'EVP, DX',resource:'Ray Singer',targetRate:250,lowRate:200,highRate:300},
+  {id:'s3',group:'Executive',position:'VP, DX',resource:'Fabio Fiss',targetRate:180,lowRate:150,highRate:225},
+  {id:'s4',group:'IT/Tech Ops',position:'Dev Ops Manager',resource:'Charlie McGibney',targetRate:180,lowRate:150,highRate:180},
+  {id:'s5',group:'Development',position:'Developer, Senior Tech Director',resource:'Joseph DiGiovanna',targetRate:220,lowRate:180,highRate:220},
+  {id:'s6',group:'Development',position:'Developer, Tech Director',resource:'Daniel Rivas',targetRate:180,lowRate:120,highRate:200},
+  {id:'s7',group:'Development',position:'Developer, Senior',resource:'Bill Economou / Jake Crespo / James Maynard',targetRate:180,lowRate:165,highRate:220},
+  {id:'s8',group:'Development',position:'Developer, Mid',resource:'Dayrel Almaguer / Isidro Gonzalez / Javier Moran',targetRate:150,lowRate:100,highRate:150},
+  {id:'s9',group:'Development',position:'Developer, Junior',resource:'TBD',targetRate:120,lowRate:90,highRate:100},
+  {id:'s10',group:'Management',position:'SVP, Client Success',resource:'Jen Salazar Sims',targetRate:180,lowRate:170,highRate:190},
+  {id:'s11',group:'Management',position:'Project Manager, Director',resource:'Linda Johnson / Marie Barcenas / Niccoli Hersey',targetRate:180,lowRate:170,highRate:220},
+  {id:'s12',group:'Management',position:'Project Manager, Senior',resource:'Jelena Jovanovic',targetRate:170,lowRate:130,highRate:170},
+  {id:'s13',group:'Management',position:'Account, Director',resource:'Kristin Parrish',targetRate:150,lowRate:130,highRate:170},
+  {id:'s14',group:'Management',position:'Project Manager, Mid',resource:'Ian Pescod / Ines Niederhubner / Maria Hernandez',targetRate:150,lowRate:120,highRate:170},
+  {id:'s15',group:'Management',position:'Project Manager, Junior',resource:'TBD',targetRate:130,lowRate:110,highRate:120},
+  {id:'s16',group:'QA/A',position:'QA Tester/Content Author, Director',resource:'Giselle Castro',targetRate:180,lowRate:130,highRate:180},
+  {id:'s17',group:'QA/A',position:'QA Tester/Content Author, Senior',resource:'Carlos Obaldia',targetRate:150,lowRate:120,highRate:150},
+  {id:'s18',group:'QA/A',position:'QA Tester/Content Author, Mid',resource:'Diana Marin / Kiara Moreira / Ricardo Arosemena',targetRate:130,lowRate:110,highRate:130},
+  {id:'s19',group:'QA/A',position:'QA Tester/Content Author, Junior',resource:'Manuel Paredes',targetRate:120,lowRate:100,highRate:120},
+  {id:'s20',group:'Digital Studio',position:'Creative Director',resource:'Daniel Sutterby / Joshua Temkin',targetRate:180,lowRate:160,highRate:180},
+  {id:'s21',group:'Digital Studio',position:'UX/UI Specialist, Senior',resource:'TBD',targetRate:170,lowRate:150,highRate:170},
+  {id:'s22',group:'Digital Studio',position:'Associate Creative Director',resource:'Elizabeth Baro',targetRate:150,lowRate:125,highRate:150},
+  {id:'s23',group:'Digital Studio',position:'Art Director',resource:'Jacobo Candanedo',targetRate:150,lowRate:120,highRate:130},
+  {id:'s24',group:'Digital Studio',position:'Designer, Senior',resource:'TBD',targetRate:130,lowRate:120,highRate:130},
+  {id:'s25',group:'Digital Studio',position:'Designer, Mid',resource:'Alejandro Cadivad / Carlos Quinonez / Mia Park',targetRate:120,lowRate:100,highRate:120},
+  {id:'s26',group:'Digital Studio',position:'Designer, Junior',resource:'TBD',targetRate:110,lowRate:100,highRate:120},
+  {id:'s27',group:'Search Experience',position:'Search Experience, Director',resource:'Gareth Cunningham',targetRate:180,lowRate:150,highRate:180},
+  {id:'s28',group:'Search Experience',position:'Search Strategist',resource:'Maurice White',targetRate:150,lowRate:120,highRate:150},
+  {id:'s29',group:'Search Experience',position:'Search Specialist',resource:'Henry Acero / Hernan Perdomo',targetRate:130,lowRate:100,highRate:130},
+  {id:'s30',group:'Search Experience',position:'Search, Junior',resource:'TBD',targetRate:120,lowRate:90,highRate:120},
+  {id:'s31',group:'Search Experience',position:'Search, TPM',resource:'Isamarys',targetRate:130,lowRate:100,highRate:130},
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  project: { name:'', client:'', kickoffDate:'', numSprints:12, sprint0Weeks:4 },
+  staff: [],
+  phases: []
+};
+
+function save() {
+  try { localStorage.setItem('rbt_v2', JSON.stringify(state)); } catch(e) {}
+}
+function load() {
+  try {
+    const d = localStorage.getItem('rbt_v2');
+    if (d) state = JSON.parse(d);
+  } catch(e) {}
+  // Migrations
+  if (!state.project.sprint0Weeks) state.project.sprint0Weeks = 4;
+  state.phases.forEach(ph => {
+    if (!ph.deps) ph.deps = [];
+    if (ph.startSprint === undefined) ph.startSprint = null;
+  });
+  // Migrate old dependencies/depType format to new deps array
+  state.phases.forEach(ph => ph.epics.forEach(ep => {
+    if (!ep.deps) {
+      ep.deps = (ep.dependencies || []).map(id => ({id, type: ep.depType || 'fs'}));
+      delete ep.dependencies; delete ep.depType;
+    }
+  }));
+}
+
+const uid = () => 'id_' + Date.now().toString(36) + Math.random().toString(36).substr(2,4);
+const fmt$ = v => v == null || isNaN(v) ? '—' : '$' + Math.round(v).toLocaleString();
+const fmtH = v => v == null || isNaN(v) ? '—' : Math.round(v * 10) / 10 + 'h';
+
+// ============================================================
+// SCHEDULE COMPUTATION
+// ============================================================
+function computeSchedule() {
+  const sprint0WeeksSetting = parseInt(state.project.sprint0Weeks) || 4;
+
+  // Pre-pass: schedule Sprint 0 phases to determine sprint1StartUnit
+  let sprint1StartUnit;
+  {
+    let sprint0EndUnit = 0;
+    const sp0Phases = state.phases.filter(ph => parseInt(ph.startSprint) === 0);
+    for (const ph of sp0Phases) {
+      const memo = {};
+      const epicEndPre = (epicId) => {
+        if (memo[epicId] !== undefined) return memo[epicId];
+        const epic = ph.epics.find(e => e.id === epicId);
+        if (!epic) return 0;
+        let start = 0;
+        for (const dep of (epic.deps || [])) {
+          if (dep.id) start = Math.max(start, epicEndPre(dep.id));
+        }
+        const end = start + (epic.duration || 1);
+        memo[epicId] = end;
+        return end;
+      };
+      for (const epic of ph.epics) epicEndPre(epic.id);
+      const phEnd = ph.epics.length > 0
+        ? Math.max(...ph.epics.map(e => memo[e.id] || 1))
+        : 1;
+      sprint0EndUnit = Math.max(sprint0EndUnit, phEnd);
+    }
+    const sprint0DisplayCols = Math.max(Math.ceil(sprint0EndUnit * 2), sprint0WeeksSetting);
+    sprint1StartUnit = sprint0DisplayCols / 2;
+  }
+
+  const scheduled = {};
+
+  function schedulePhase(phaseId) {
+    if (scheduled[phaseId]) return scheduled[phaseId];
+    scheduled[phaseId] = {}; // cycle guard
+
+    const ph = state.phases.find(p => p.id === phaseId);
+    if (!ph) return { phaseId, start: sprint1StartUnit, end: sprint1StartUnit + 1, epicSched: {} };
+
+    const idx = state.phases.findIndex(p => p.id === phaseId);
+    const activeDeps = (ph.deps || []).filter(d => d.id);
+    const hasManualStart = ph.startSprint != null && ph.startSprint !== '' && parseInt(ph.startSprint) >= 0;
+
+    let phStart;
+    if (hasManualStart) {
+      const sprintNum = parseInt(ph.startSprint);
+      // Translate sprint number → sprint unit: SP0=0, SP1=sprint1StartUnit, SPn=sprint1StartUnit+(n-1)
+      phStart = sprintNum === 0 ? 0 : sprint1StartUnit + (sprintNum - 1);
+      for (const dep of activeDeps) {
+        const ds = schedulePhase(dep.id);
+        if (ds && ds.end) phStart = Math.max(phStart, ds.end);
+      }
+    } else if (activeDeps.length > 0) {
+      phStart = sprint1StartUnit;
+      for (const dep of activeDeps) {
+        const ds = schedulePhase(dep.id);
+        if (ds && ds.end) phStart = Math.max(phStart, ds.end);
+      }
+    } else {
+      // Sequential: start after previous phase
+      if (idx === 0) {
+        phStart = sprint1StartUnit;
+      } else {
+        const prev = schedulePhase(state.phases[idx - 1].id);
+        phStart = prev && prev.end ? prev.end : sprint1StartUnit;
+      }
+    }
+
+    // Epic schedules within this phase
+    const epicSched = {};
+    const memo = {};
+
+    function epicEnd(epicId) {
+      if (memo[epicId] !== undefined) return memo[epicId];
+      const epic = ph.epics.find(e => e.id === epicId);
+      if (!epic) return phStart;
+      let start = phStart;
+      for (const dep of (epic.deps || [])) {
+        if (dep.id) start = Math.max(start, epicEnd(dep.id));
+      }
+      const end = start + (epic.duration || 1);
+      epicSched[epicId] = { start, end };
+      memo[epicId] = end;
+      return end;
+    }
+
+    for (const epic of ph.epics) epicEnd(epic.id);
+
+    const phEnd = ph.epics.length > 0
+      ? Math.max(...ph.epics.map(e => epicSched[e.id]?.end || phStart + 1))
+      : phStart + 1;
+
+    const result = { phaseId, start: phStart, end: phEnd, epicSched };
+    scheduled[phaseId] = result;
+    return result;
+  }
+
+  state.phases.forEach(ph => schedulePhase(ph.id));
+  return state.phases.map(ph => scheduled[ph.id] || { phaseId: ph.id, start: sprint1StartUnit, end: sprint1StartUnit + 1, epicSched: {} });
+}
+
+function phaseDuration(phaseId) {
+  const sched = computeSchedule();
+  const ps = sched.find(s => s.phaseId === phaseId);
+  return ps ? (ps.end - ps.start) : 1;
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+let currentView = 'setup';
+let roadmapTab = 'setup';
+
+function navigate(view) {
+  currentView = view;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === view);
+  });
+  const titles = {setup:'Project Setup', staff:'Staff', roadmap:'Roadmap', budget:'Budget', export:'Export & Download'};
+  document.getElementById('page-title').textContent = titles[view] || view;
+  updateTopbarMeta();
+  renderView();
+}
+
+function updateTopbarMeta() {
+  const el = document.getElementById('topbar-meta');
+  const p = state.project;
+  if (p.name) {
+    el.innerHTML = `<strong>${p.name}</strong>${p.client ? ' · ' + p.client : ''}${p.kickoffDate ? '<br>' + state.project.numSprints + ' sprints · Kickoff ' + p.kickoffDate : ''}`;
+  } else {
+    el.textContent = '';
+  }
+}
+
+function renderView() {
+  const el = document.getElementById('content');
+  if (currentView === 'setup') el.innerHTML = renderSetup();
+  else if (currentView === 'staff') el.innerHTML = renderStaff();
+  else if (currentView === 'roadmap') el.innerHTML = renderRoadmap();
+  else if (currentView === 'budget') el.innerHTML = renderBudget();
+  else if (currentView === 'export') el.innerHTML = renderExport();
+  attachEventListeners();
+}
+
+// ============================================================
+// VIEW: SETUP
+// ============================================================
+function renderSetup() {
+  const p = state.project;
+  return `
+  <div class="card">
+    <div class="card-title"><span>Project Information</span></div>
+    <div class="form-grid form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Project Name</label>
+        <input type="text" data-field="name" placeholder="e.g. Acme Website Redesign" value="${p.name||''}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Client Name</label>
+        <input type="text" data-field="client" placeholder="e.g. Acme Corp" value="${p.client||''}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Kickoff / Sprint 0 Date</label>
+        <input type="date" data-field="kickoffDate" value="${p.kickoffDate||''}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Number of Sprints</label>
+        <select data-field="numSprints">
+          ${[6,8,10,12,14,16,18,20].map(n=>`<option value="${n}" ${p.numSprints==n?'selected':''}>${n} Sprints (~${n/2} months)</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sprint 0 Weeks</label>
+        <select data-field="sprint0Weeks">
+          ${[1,2,3,4,5,6,8].map(n=>`<option value="${n}" ${p.sprint0Weeks==n?'selected':''}>${n} Week${n>1?'s':''}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>Phases</span>
+      <button class="btn btn-primary btn-sm" id="add-phase-btn">+ Add Phase</button>
+    </div>
+    <div class="inline-note">Define the high-level phases of your project (e.g. Discovery, Design, Development). You'll add epics and resources in the next steps.</div>
+    ${state.phases.length === 0 ? `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>No phases yet. Click "Add Phase" to get started.</p>
+      </div>` : `
+    <div id="phase-list">
+      ${state.phases.map((ph, i) => `
+      <div class="phase-block" data-phase-id="${ph.id}">
+        <div class="phase-block-header">
+          <div class="phase-color-dot" style="background:${ph.color}"></div>
+          <input class="phase-name-input" data-phase-id="${ph.id}" data-field="phaseName" value="${esc(ph.name)}" placeholder="Phase name">
+          <span class="text-muted text-sm" style="margin-left:auto">${ph.epics.length} epic${ph.epics.length!==1?'s':''}</span>
+          <button class="btn btn-ghost btn-sm" data-action="move-phase-up" data-phase-id="${ph.id}" title="Move up">↑</button>
+          <button class="btn btn-ghost btn-sm" data-action="move-phase-down" data-phase-id="${ph.id}" title="Move down">↓</button>
+          <button class="btn btn-danger btn-sm" data-action="del-phase" data-phase-id="${ph.id}">Remove</button>
+        </div>
+      </div>`).join('')}
+    </div>`}
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:10px">
+    <button class="btn btn-navy btn-lg" onclick="navigate('roadmap')">Next: Roadmap →</button>
+  </div>`;
+}
+
+// ============================================================
+// VIEW: STAFF
+// ============================================================
+function renderStaff() {
+  const countMap = {};
+  state.staff.forEach(s => { const k = s._srcId || s.id; countMap[k] = (countMap[k] || 0) + 1; });
+  const groups = [...new Set(DEFAULT_STAFF.map(s => s.group))];
+  const pickerRows = groups.map(g => {
+    const roles = DEFAULT_STAFF.filter(s => s.group === g);
+    const items = roles.map(s => {
+      const count = countMap[s.id] || 0;
+      return `<div class="role-picker-item ${count > 0 ? 'added' : ''}" data-action="add-staff-role" data-src-id="${s.id}">
+        <span class="role-picker-name">${esc(s.position)}</span>
+        <span class="role-picker-rate">$${s.targetRate}/hr</span>
+        <span class="role-picker-check">${count > 0 ? count : '+'}</span>
+      </div>`;
+    }).join('');
+    return `<div class="role-picker-group">
+      <div class="role-picker-group-label">${esc(g)}</div>
+      ${items}
+    </div>`;
+  }).join('');
+
+  const tableRows = state.staff.length
+    ? state.staff.map(s => renderStaffRow(s)).join('')
+    : `<tr><td colspan="7" style="text-align:center;color:var(--text-light);padding:24px">No roles selected yet. Choose from the list on the left.</td></tr>`;
+
+  return `
+  <div class="staff-layout">
+    <div class="card role-picker-panel">
+      <div class="card-title" style="margin-bottom:12px">
+        <span>Available Roles</span>
+      </div>
+      <div class="inline-note" style="margin-bottom:12px">Click a role to add it to your project staff list.</div>
+      <div class="role-picker-scroll">
+        ${pickerRows}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;flex:1;min-width:0">
+      <div class="card">
+        <div class="card-title">
+          <span>Project Staff <span style="font-weight:400;color:var(--text-light);font-size:13px">(${state.staff.length} role${state.staff.length!==1?'s':''})</span></span>
+          <button class="btn btn-primary btn-sm" id="add-staff-btn">+ Add Custom Role</button>
+        </div>
+        <div class="inline-note">Rates drive project cost calculations. Client Rate is set per-phase in the Budget step.</div>
+        <div class="table-wrap">
+        <table class="data-tbl">
+          <thead><tr>
+            <th>Group</th><th>Position / Role</th><th>Resource(s)</th>
+            <th>Target Rate</th><th>Low Rate</th><th>High Rate</th><th></th>
+          </tr></thead>
+          <tbody id="staff-tbody">
+            ${tableRows}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:space-between;gap:10px">
+    <button class="btn btn-outline" onclick="navigate('roadmap')">← Back</button>
+    <button class="btn btn-navy btn-lg" onclick="navigate('budget')">Next: Budget →</button>
+  </div>`;
+}
+
+function renderStaffRow(s) {
+  const groups = ['Executive','IT/Tech Ops','Development','Management','QA/A','Digital Studio','Search Experience'];
+  return `<tr data-staff-id="${s.id}">
+    <td><select data-staff-id="${s.id}" data-field="group" style="min-width:110px">
+      ${groups.map(g=>`<option ${s.group===g?'selected':''}>${g}</option>`).join('')}
+    </select></td>
+    <td><input type="text" data-staff-id="${s.id}" data-field="position" value="${esc(s.position)}" style="min-width:180px"></td>
+    <td><input type="text" data-staff-id="${s.id}" data-field="resource" value="${esc(s.resource)}" style="min-width:160px"></td>
+    <td><input type="number" data-staff-id="${s.id}" data-field="targetRate" value="${s.targetRate}" style="width:70px"></td>
+    <td><input type="number" data-staff-id="${s.id}" data-field="lowRate" value="${s.lowRate}" style="width:70px"></td>
+    <td><input type="number" data-staff-id="${s.id}" data-field="highRate" value="${s.highRate}" style="width:70px"></td>
+    <td><button class="btn btn-danger btn-sm" data-action="del-staff" data-staff-id="${s.id}">✕</button></td>
+  </tr>`;
+}
+
+// ============================================================
+// VIEW: ROADMAP
+// ============================================================
+function renderRoadmap() {
+  return `
+  <div class="rm-tabs">
+    <div class="rm-tab ${roadmapTab==='setup'?'active':''}" data-rmtab="setup">Phase & Epic Setup</div>
+    <div class="rm-tab ${roadmapTab==='gantt'?'active':''}" data-rmtab="gantt">Timeline View</div>
+  </div>
+  ${roadmapTab === 'setup' ? renderRoadmapSetup() : renderGantt()}
+  <div style="display:flex;justify-content:space-between;gap:10px;margin-top:4px">
+    <button class="btn btn-outline" onclick="navigate('setup')">← Back</button>
+    <button class="btn btn-navy btn-lg" onclick="navigate('staff')">Next: Staff →</button>
+  </div>`;
+}
+
+function renderRoadmapSetup() {
+  if (state.phases.length === 0) {
+    return `<div class="card"><div class="empty-state"><div class="empty-icon">🗺️</div><p>No phases defined. Go back to <strong>Project Setup</strong> to add phases first.</p></div></div>`;
+  }
+
+  return state.phases.map((ph, pi) => {
+    const phColor = ph.color || PHASE_COLORS[pi % PHASE_COLORS.length];
+
+    return `
+    <div class="phase-block" data-phase-id="${ph.id}">
+      <div class="phase-block-header">
+        <div class="phase-color-dot" style="background:${phColor}"></div>
+        <span style="font-weight:700;font-size:14px">${esc(ph.name) || 'Unnamed Phase'}</span>
+        <button class="btn btn-primary btn-sm" data-action="add-epic" data-phase-id="${ph.id}" style="margin-left:auto">+ Add Epic</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 10px 8px;border-bottom:1px solid var(--border);background:#fafafa">
+        <span style="font-size:11px;font-weight:700;color:var(--text-light)">Start Sprint</span>
+        <input type="number" data-phase-id="${ph.id}" data-field="startSprint" value="${ph.startSprint!=null&&ph.startSprint!==''?ph.startSprint:''}" placeholder="Auto" min="0" style="width:64px;font-size:12px" title="0 = Sprint 0 / pre-project. Leave blank to auto-sequence.">
+        <span style="font-size:10px;color:var(--text-light)">(blank = sequential)</span>
+      </div>
+      <div class="phase-block-body">
+        ${ph.epics.length === 0 ? `<div class="text-muted text-sm">No epics yet. Click "Add Epic" to define deliverables for this phase.</div>` : `
+        <div style="display:grid;grid-template-columns:24px 1fr 140px 32px;gap:6px;padding:4px 0 6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-light)">
+          <span></span><span>Epic Name</span><span>Duration</span><span></span>
+        </div>
+        ${ph.epics.map((ep, ei) => {
+          const otherEpics = ph.epics.filter(e => e.id !== ep.id);
+          const epDeps = ep.deps || [];
+          const depRows = epDeps.map((d, di) => `
+            <div class="epic-dep-row">
+              <span style="font-size:10px;font-weight:700;color:var(--text-light);white-space:nowrap">Dep ${di+1}</span>
+              <select data-epic-id="${ep.id}" data-phase-id="${ph.id}" data-field="depId" data-dep-idx="${di}" style="font-size:12px;flex:1">
+                <option value="">— Select —</option>
+                ${otherEpics.map(e=>`<option value="${e.id}" ${d.id===e.id?'selected':''}>${esc(e.name)||'Unnamed'}</option>`).join('')}
+              </select>
+              <select data-epic-id="${ep.id}" data-phase-id="${ph.id}" data-field="depType" data-dep-idx="${di}" style="font-size:12px;width:160px">
+                <option value="fs" ${(d.type||'fs')==='fs'?'selected':''}>Must complete first</option>
+                <option value="ss" ${d.type==='ss'?'selected':''}>Can start together</option>
+                <option value="overlap" ${d.type==='overlap'?'selected':''}>Can overlap</option>
+              </select>
+              <button class="btn btn-danger btn-sm" style="padding:2px 7px;flex-shrink:0" data-action="del-epic-dep" data-epic-id="${ep.id}" data-phase-id="${ph.id}" data-dep-idx="${di}">✕</button>
+            </div>`).join('');
+          return `
+          <div class="epic-row" style="display:block;padding:8px 10px">
+            <div style="display:grid;grid-template-columns:24px 1fr 140px 32px;gap:6px;align-items:center">
+              <div style="display:flex;flex-direction:column;gap:1px">
+                <button class="btn btn-ghost btn-sm" style="padding:1px 4px;font-size:10px;line-height:1" data-action="move-epic-up" data-epic-id="${ep.id}" data-phase-id="${ph.id}" ${ei===0?'disabled':''} title="Move up">↑</button>
+                <button class="btn btn-ghost btn-sm" style="padding:1px 4px;font-size:10px;line-height:1" data-action="move-epic-down" data-epic-id="${ep.id}" data-phase-id="${ph.id}" ${ei===ph.epics.length-1?'disabled':''} title="Move down">↓</button>
+              </div>
+              <input type="text" data-epic-id="${ep.id}" data-phase-id="${ph.id}" data-field="epicName"
+                value="${esc(ep.name)}" placeholder="Epic name…">
+              <select data-epic-id="${ep.id}" data-phase-id="${ph.id}" data-field="epicDuration">
+                ${DURATION_OPTIONS.map(d=>`<option value="${d.v}" ${ep.duration===d.v?'selected':''}>${d.l}</option>`).join('')}
+              </select>
+              <button class="btn btn-danger btn-sm" data-action="del-epic" data-epic-id="${ep.id}" data-phase-id="${ph.id}">✕</button>
+            </div>
+            ${depRows || epDeps.length === 0 ? `<div class="epic-deps-section">${depRows}<button class="btn btn-ghost btn-sm" style="font-size:11px;margin-top:4px;padding:3px 8px" data-action="add-epic-dep" data-epic-id="${ep.id}" data-phase-id="${ph.id}">+ Add Dependency</button></div>` : ''}
+          </div>`;
+        }).join('')}`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderGantt() {
+  const numSprints = parseInt(state.project.numSprints) || 12;
+  const sprint0WeeksSetting = parseInt(state.project.sprint0Weeks) || 4;
+  const sched = computeSchedule();
+
+  // Auto-compute SP0 width from actual Sprint 0 content.
+  // All positions use a uniform 2-cols-per-sprint-unit scale throughout.
+  const sprint0Phases = sched.filter(ps => {
+    const ph = state.phases.find(p => p.id === ps.phaseId);
+    return ph && parseInt(ph.startSprint) === 0;
+  });
+  const sprint0EndUnit = sprint0Phases.length > 0 ? Math.max(...sprint0Phases.map(ps => ps.end)) : 0;
+  // SP0 column width in weeks: at least the user setting, at least the content
+  const sprint0DisplayCols = Math.max(Math.ceil(sprint0EndUnit * 2), sprint0WeeksSetting);
+  // SP1 starts at sprint unit = sprint0DisplayCols/2 (uniform 2-cols-per-sprint scale)
+  const sprint1StartUnit = sprint0DisplayCols / 2;
+
+  const totalDataCols = sprint0DisplayCols + numSprints * 2;
+
+  // Uniform mapping: 1 sprint unit = 2 columns everywhere
+  function sprintToCol(s) {
+    return 2 + Math.round(s * 2);
+  }
+  function durationToCols(d) { return Math.round(d * 2); }
+
+  const colWidths = `180px ${Array(totalDataCols).fill('minmax(18px,1fr)').join(' ')}`;
+
+  let html = `<div class="gantt-wrap"><div class="gantt-grid" style="display:grid;grid-template-columns:${colWidths}">`;
+
+  // Row 1: Month headers
+  html += `<div class="gantt-cell label header" style="grid-column:1;grid-row:1"></div>`;
+  html += `<div class="gantt-cell month-hdr" style="grid-column:2/span ${sprint0DisplayCols};grid-row:1">Month 0</div>`;
+  for (let m = 1; m <= Math.ceil(numSprints / 2); m++) {
+    const su1 = sprint1StartUnit + (m - 1) * 2;
+    const su2 = sprint1StartUnit + Math.min(m * 2, numSprints);
+    const cStart = sprintToCol(su1);
+    const cEnd = sprintToCol(su2);
+    html += `<div class="gantt-cell month-hdr" style="grid-column:${cStart}/span ${cEnd - cStart};grid-row:1">Month ${m}</div>`;
+  }
+
+  // Row 2: Sprint headers
+  html += `<div class="gantt-cell label sprint-hdr" style="grid-column:1;grid-row:2">Task / Epic</div>`;
+  html += `<div class="gantt-cell sprint-hdr" style="grid-column:2/span ${sprint0DisplayCols};grid-row:2">SP 0</div>`;
+  for (let s = 1; s <= numSprints; s++) {
+    const sc = sprintToCol(sprint1StartUnit + s - 1);
+    html += `<div class="gantt-cell sprint-hdr" style="grid-column:${sc}/span 2;grid-row:2">SP ${s}</div>`;
+  }
+
+  // Row 3: Week headers
+  html += `<div class="gantt-cell label sprint-hdr" style="grid-column:1;grid-row:3;font-size:9px;color:var(--text-light)">Week</div>`;
+  for (let w = 1; w <= sprint0DisplayCols; w++) {
+    html += `<div class="gantt-cell sprint-hdr" style="grid-column:${1 + w};grid-row:3;font-size:9px">w0.${w}</div>`;
+  }
+  let weekNum = 1;
+  for (let s = 1; s <= numSprints; s++) {
+    const sc = sprintToCol(sprint1StartUnit + s - 1);
+    html += `<div class="gantt-cell sprint-hdr" style="grid-column:${sc};grid-row:3;font-size:9px">w${weekNum}</div>`;
+    html += `<div class="gantt-cell sprint-hdr" style="grid-column:${sc + 1};grid-row:3;font-size:9px">w${weekNum + 1}</div>`;
+    weekNum += 2;
+  }
+
+  let currentRow = 4;
+
+  // Rows: phases and their epics
+  sched.forEach((ps, pi) => {
+    const phase = state.phases.find(p => p.id === ps.phaseId);
+    if (!phase) return;
+    const color = phase.color || PHASE_COLORS[pi % PHASE_COLORS.length];
+
+    const pStartCol = sprintToCol(ps.start);
+    const pColSpan = Math.min(durationToCols(ps.end - ps.start), totalDataCols - pStartCol + 2);
+
+    html += `<div class="gantt-cell label gantt-phase-row" style="grid-column:1;grid-row:${currentRow};background:${color}15">
+      <span style="font-weight:700;color:${color}">${esc(phase.name)||'Unnamed'}</span>
+    </div>`;
+    if (pStartCol > 2) html += `<div style="grid-column:2/${pStartCol};grid-row:${currentRow};background:${color}08"></div>`;
+    if (pColSpan > 0 && pStartCol <= totalDataCols + 1) {
+      html += `<div style="grid-column:${pStartCol}/span ${Math.max(1,pColSpan)};grid-row:${currentRow};padding:4px;background:${color}18">
+        <div class="gantt-bar" style="background:${color};opacity:0.85">${esc(phase.name)||'Phase'}</div>
+      </div>`;
+    }
+    const afterCol = pStartCol + pColSpan;
+    if (afterCol <= totalDataCols + 1) {
+      html += `<div style="grid-column:${afterCol}/${totalDataCols+2};grid-row:${currentRow};background:${color}08"></div>`;
+    }
+    currentRow++;
+
+    // Epic rows
+    phase.epics.forEach(ep => {
+      const es = ps.epicSched[ep.id];
+      if (!es) return;
+      const eStartCol = sprintToCol(es.start);
+      const eColSpan = Math.min(durationToCols(ep.duration || 1), totalDataCols - eStartCol + 2);
+      const depNames = (ep.deps||[]).map(d => {
+        const depEpic = phase.epics.find(e=>e.id===d.id);
+        return depEpic ? depEpic.name : null;
+      }).filter(Boolean);
+
+      // Show weeks label for Sprint 0 epics, sprints for regular
+      const inSprint0 = es.start < sprint1StartUnit;
+      const durLabel = inSprint0
+        ? `${Math.round((ep.duration||1)*2)}w`
+        : (DURATION_OPTIONS.find(d=>d.v===ep.duration)?.l || ep.duration+'sp');
+
+      html += `<div class="gantt-cell label" style="grid-column:1;grid-row:${currentRow};padding-left:24px;font-size:12px;color:var(--text-light)">
+        ${esc(ep.name)||'Unnamed'}${depNames.length?`<span style="font-size:10px;color:#9ca3af"> ← ${depNames.join(', ')}</span>`:''}
+      </div>`;
+      if (eStartCol > 2) html += `<div style="grid-column:2/${eStartCol};grid-row:${currentRow}"></div>`;
+      if (eColSpan > 0) {
+        html += `<div style="grid-column:${eStartCol}/span ${Math.max(1,eColSpan)};grid-row:${currentRow};padding:5px 4px">
+          <div class="gantt-bar" style="background:${color};font-size:10px">${durLabel}</div>
+        </div>`;
+      }
+      const epAfterCol = eStartCol + eColSpan;
+      if (epAfterCol <= totalDataCols + 1) {
+        html += `<div style="grid-column:${epAfterCol}/${totalDataCols+2};grid-row:${currentRow}"></div>`;
+      }
+      currentRow++;
+    });
+  });
+
+  html += '</div></div>';
+
+  if (sched.length === 0) {
+    return `<div class="card"><div class="empty-state"><div class="empty-icon">📅</div><p>Add phases and epics in the Setup tab to see the timeline.</p></div></div>`;
+  }
+
+  const maxEnd = sched.length > 0 ? Math.max(...sched.map(s=>s.end)) : 1;
+  return `
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between">
+      <span style="font-weight:600;font-size:13.5px">Project Timeline</span>
+      <span class="text-muted text-sm">Sprint 0 + Sprints 1–${numSprints} · ~${maxEnd} sprints planned</span>
+    </div>
+    ${html}
+  </div>`;
+}
+
+// ============================================================
+// VIEW: BUDGET
+// ============================================================
+function renderBudget() {
+  if (state.phases.length === 0) {
+    return `<div class="card"><div class="empty-state"><div class="empty-icon">💰</div><p>No phases defined. Go back to <strong>Project Setup</strong> to add phases.</p></div></div>`;
+  }
+
+  const sched = computeSchedule();
+  const positions = [...new Set(state.staff.map(s => s.position))];
+
+  let totalMO = 0, totalClient = 0;
+
+  const phaseHtml = state.phases.map((ph, pi) => {
+    const ps = sched.find(s => s.phaseId === ph.id);
+    const suggestedSprints = ps ? (ps.end - ps.start) : 1;
+    const color = ph.color || PHASE_COLORS[pi % PHASE_COLORS.length];
+
+    let phaseMO = 0, phaseClient = 0;
+    ph.resources.forEach(r => {
+      const staffEntry = state.staff.find(s => s.position === r.role);
+      const moRate = staffEntry ? staffEntry.targetRate : 0;
+      const fte = (parseFloat(r.fte) || 0) / 100;
+      const sprints = parseFloat(r.sprints) || 0;
+      const clientRate = parseFloat(r.clientRate) || 0;
+      phaseMO += (moRate * 80 * fte * sprints);
+      phaseClient += (clientRate * 80 * fte * sprints);
+    });
+    totalMO += phaseMO;
+    totalClient += phaseClient;
+
+    const rowsHtml = ph.resources.map((r, ri) => {
+      const staffEntry = state.staff.find(s => s.position === r.role);
+      const moRate = staffEntry ? staffEntry.targetRate : 0;
+      const moLow = staffEntry ? staffEntry.lowRate : 0;
+      const fte = (parseFloat(r.fte) || 0) / 100;
+      const sprints = parseFloat(r.sprints) || 0;
+      const clientRate = parseFloat(r.clientRate) || 0;
+      const hours = fte * sprints * 80;
+      const moTotal = moRate * 80 * fte * sprints;
+      const clientTotal = clientRate * 80 * fte * sprints;
+      const sla = r.clientRate !== '' && clientRate > 0 && moLow > 0 && clientRate < moLow;
+      const isEmpty = !r.role && !r.fte && !r.sprints;
+
+      return `<div class="resource-row-grid" data-resource-id="${r.id}" data-phase-id="${ph.id}">
+        <select data-resource-id="${r.id}" data-phase-id="${ph.id}" data-field="role" style="font-size:12px">
+          <option value="">— Select Role —</option>
+          ${positions.map(p=>`<option value="${p}" ${r.role===p?'selected':''}>${p}</option>`).join('')}
+        </select>
+        <select data-resource-id="${r.id}" data-phase-id="${ph.id}" data-field="epicId" style="font-size:12px">
+          <option value="">— All Phase —</option>
+          ${ph.epics.map(e=>`<option value="${e.id}" ${r.epicId===e.id?'selected':''}>${esc(e.name)||'Unnamed epic'}</option>`).join('')}
+        </select>
+        <input type="text" data-resource-id="${r.id}" data-phase-id="${ph.id}" data-field="preferredResource"
+          value="${esc(r.preferredResource)}" placeholder="Preferred resource" style="font-size:12px">
+        <input type="text" data-resource-id="${r.id}" data-phase-id="${ph.id}" data-field="backupResource"
+          value="${esc(r.backupResource)}" placeholder="Backup" style="font-size:12px">
+        <div style="display:flex;flex-direction:column;align-items:flex-end">
+          <input type="number" data-resource-id="${r.id}" data-phase-id="${ph.id}" data-field="clientRate"
+            value="${r.clientRate}" placeholder="0" style="width:100%;text-align:right;font-size:12px">
+          ${moRate ? `<span style="font-size:9.5px;color:var(--text-light)">MO: $${moRate}</span>` : ''}
+        </div>
+        <input type="number" data-resource-id="${r.id}" data-phase-id="${ph.id}" data-field="fte"
+          value="${r.fte}" placeholder="50" step="2.5" min="0" max="100" style="text-align:right;font-size:12px" title="FTE % (50 = 50%)">
+        <input type="number" data-resource-id="${r.id}" data-phase-id="${ph.id}" data-field="sprints"
+          value="${r.sprints}" placeholder="${suggestedSprints}" style="text-align:right;font-size:12px">
+        <div class="calc-val">${isEmpty ? '' : fmtH(hours)}</div>
+        <div class="calc-val">${isEmpty ? '' : fmt$(moTotal)}</div>
+        <div class="calc-val">${isEmpty ? '' : fmt$(clientTotal)}</div>
+        <div style="text-align:center">${r.role && r.clientRate !== '' ? (sla ? '<span class="sla-yes">SLA</span>' : '<span class="sla-dash">—</span>') : ''}</div>
+        <button class="btn btn-danger btn-sm" data-action="del-resource" data-resource-id="${r.id}" data-phase-id="${ph.id}" style="padding:2px 6px">✕</button>
+      </div>`;
+    }).join('');
+
+    return `
+    <div class="budget-phase">
+      <div class="budget-phase-header">
+        <div class="budget-phase-header-left">
+          <div class="phase-color-dot" style="background:${color}"></div>
+          <span class="budget-phase-title">${esc(ph.name)||'Unnamed Phase'}</span>
+          <span class="badge badge-blue">${suggestedSprints} sprint${suggestedSprints!==1?'s':''}</span>
+        </div>
+        <div class="budget-totals">
+          <div class="budget-total-item">
+            <div class="budget-total-label">MO Total</div>
+            <div class="budget-total-value" style="color:var(--black)">${fmt$(phaseMO)}</div>
+          </div>
+          <div class="budget-total-item">
+            <div class="budget-total-label">Client Total</div>
+            <div class="budget-total-value" style="color:var(--rose)">${fmt$(phaseClient)}</div>
+          </div>
+        </div>
+      </div>
+      <div class="resource-table-scroll">
+        ${ph.resources.length === 0
+          ? `<div style="padding:20px;text-align:center;color:var(--text-light);font-size:13px">No resources added yet. Click "+ Add Resource" to assign staff to this phase.</div>`
+          : `<div class="resource-row-grid resource-header">
+          <span>Role</span><span>Epic</span><span>Preferred Resource</span><span>Backup</span>
+          <span style="text-align:right">Client Rate</span>
+          <span style="text-align:right">FTE%</span>
+          <span style="text-align:right">Sprints</span>
+          <span style="text-align:right">Hours</span>
+          <span style="text-align:right">MO Total</span>
+          <span style="text-align:right">Client Total</span>
+          <span style="text-align:center">SLA</span>
+          <span></span>
+        </div>
+        ${rowsHtml}`}
+      </div>
+      <div style="padding:8px 10px">
+        <button class="btn btn-outline btn-sm" data-action="add-resource" data-phase-id="${ph.id}">+ Add Resource</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="stats-row" style="margin-bottom:16px">
+    <div class="stat-box"><div class="sv">${fmt$(totalMO)}</div><div class="sl">Total MO Cost</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--rose)">${fmt$(totalClient)}</div><div class="sl">Total Client Budget</div></div>
+    <div class="stat-box"><div class="sv">${state.phases.length}</div><div class="sl">Phases</div></div>
+    <div class="stat-box"><div class="sv">${state.phases.reduce((a,p)=>a+p.epics.length,0)}</div><div class="sl">Epics</div></div>
+  </div>
+  <div class="inline-note">FTE% = percentage of full-time commitment (50 = 50%). Sprints = number of 2-week sprints. SLA flag appears if Client Rate is below the role's low rate threshold.</div>
+  ${phaseHtml}
+  <div style="display:flex;justify-content:space-between;gap:10px">
+    <button class="btn btn-outline" onclick="navigate('staff')">← Back</button>
+    <button class="btn btn-navy btn-lg" onclick="navigate('export')">Next: Export →</button>
+  </div>`;
+}
+
+// ============================================================
+// VIEW: EXPORT
+// ============================================================
+function renderExport() {
+  const sched = computeSchedule();
+  const totalSprints = sched.length > 0 ? Math.max(...sched.map(s=>s.end)) - 1 : 0;
+  let totalMO = 0, totalClient = 0, totalHours = 0;
+  state.phases.forEach(ph => {
+    ph.resources.forEach(r => {
+      const staffEntry = state.staff.find(s => s.position === r.role);
+      const moRate = staffEntry ? staffEntry.targetRate : 0;
+      const fte = (parseFloat(r.fte)||0) / 100, sprints = parseFloat(r.sprints)||0, cr = parseFloat(r.clientRate)||0;
+      totalMO += moRate * 80 * fte * sprints;
+      totalClient += cr * 80 * fte * sprints;
+      totalHours += fte * sprints * 80;
+    });
+  });
+  const numEpics = state.phases.reduce((a,p)=>a+p.epics.length,0);
+
+  return `
+  <div class="export-hero">
+    <h2>Ready to Export</h2>
+    <p>Your roadmap and budget are ready. Download the Excel file to share with your team or use as the project tracking template.</p>
+    <button class="btn btn-success btn-lg" id="export-excel-btn" style="font-size:15px;padding:12px 28px">
+      ↓ Download Excel (.xlsx)
+    </button>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="sv">${state.project.name||'—'}</div><div class="sl">Project</div></div>
+    <div class="stat-box"><div class="sv">${state.phases.length}</div><div class="sl">Phases</div></div>
+    <div class="stat-box"><div class="sv">${numEpics}</div><div class="sl">Epics</div></div>
+    <div class="stat-box"><div class="sv">${totalSprints}</div><div class="sl">Sprints Used</div></div>
+    <div class="stat-box"><div class="sv">${Math.round(totalHours).toLocaleString()}h</div><div class="sl">Total Hours</div></div>
+    <div class="stat-box"><div class="sv">${fmt$(totalMO)}</div><div class="sl">MO Cost</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--rose)">${fmt$(totalClient)}</div><div class="sl">Client Budget</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Phase Summary</div>
+    <table class="data-tbl">
+      <thead><tr><th>Phase</th><th>Epics</th><th>Start Sprint</th><th>End Sprint</th><th>Duration</th><th>Resources</th><th>MO Total</th><th>Client Total</th></tr></thead>
+      <tbody>
+        ${state.phases.map((ph, pi) => {
+          const ps = sched.find(s=>s.phaseId===ph.id);
+          let pMO=0, pCl=0, resCount=0;
+          ph.resources.forEach(r=>{
+            const se=state.staff.find(s=>s.position===r.role);
+            const moR=se?se.targetRate:0;
+            const fte=(parseFloat(r.fte)||0)/100, spr=parseFloat(r.sprints)||0, cr=parseFloat(r.clientRate)||0;
+            if(r.role){resCount++;pMO+=moR*80*fte*spr;pCl+=cr*80*fte*spr;}
+          });
+          const dur = ps ? ps.end-ps.start : 0;
+          return `<tr>
+            <td><div style="display:flex;align-items:center;gap:8px"><div class="phase-color-dot" style="background:${ph.color||PHASE_COLORS[pi%PHASE_COLORS.length]}"></div><strong>${esc(ph.name)||'Unnamed'}</strong></div></td>
+            <td>${ph.epics.length}</td>
+            <td>${ps?ps.start:'—'}</td><td>${ps?ps.end-1:'—'}</td>
+            <td><span class="badge badge-blue">${dur} sprint${dur!==1?'s':''}</span></td>
+            <td>${resCount}</td>
+            <td>${fmt$(pMO)}</td><td><strong>${fmt$(pCl)}</strong></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span>Summary Roadmap</span>
+      <button class="btn btn-outline btn-sm" id="download-summary-img-btn">↓ Download as PNG</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-light);margin-bottom:12px">Phase-level snapshot — ideal for stakeholder presentations.</p>
+    <div style="overflow-x:auto;overflow-y:hidden">
+      <canvas id="summary-canvas" style="display:block;max-width:100%"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span>Detailed Roadmap</span>
+      <button class="btn btn-outline btn-sm" id="download-detailed-img-btn">↓ Download as PNG</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-light);margin-bottom:12px">Full Gantt view with phases and epics.</p>
+    <div style="overflow-x:auto;overflow-y:hidden">
+      <canvas id="detailed-canvas" style="display:block;max-width:100%"></canvas>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-start;gap:10px">
+    <button class="btn btn-outline" onclick="navigate('budget')">← Back</button>
+  </div>`;
+}
+
+// ============================================================
+// ROADMAP CANVAS
+// ============================================================
+function drawRoadmapCanvas(canvasId, mode) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const sched = computeSchedule();
+  const numSprints = parseInt(state.project.numSprints) || 12;
+  const sprint0WeeksSetting = parseInt(state.project.sprint0Weeks) || 4;
+
+  // Auto-compute SP0 width from actual content (same logic as renderGantt)
+  const sprint0Phases = sched.filter(ps => {
+    const ph = state.phases.find(p => p.id === ps.phaseId);
+    return ph && parseInt(ph.startSprint) === 0;
+  });
+  const sprint0EndUnit = sprint0Phases.length > 0 ? Math.max(...sprint0Phases.map(ps => ps.end)) : 0;
+  const sprint0DisplayCols = Math.max(Math.ceil(sprint0EndUnit * 2), sprint0WeeksSetting);
+  const sprint1StartUnit = sprint0DisplayCols / 2;
+
+  const PAD = 24;
+  const TITLE_H = 48;
+  const MONTH_H = 18;
+  const SPRINT_H = 18;
+  const WEEK_H = 16;
+  const HDR_H = MONTH_H + SPRINT_H + WEEK_H;
+  const PHASE_H = 34;
+  const EPIC_H = 26;
+  const LABEL_W = 210;
+  const SPRINT_W = 52;
+  const WEEK_W = SPRINT_W / 2;
+
+  // Uniform scale: each sprint unit = SPRINT_W pixels
+  // S0_W = sprint1StartUnit * SPRINT_W (width of the SP0 column)
+  const S0_W = sprint1StartUnit * SPRINT_W;
+  const x0 = PAD + LABEL_W;
+
+  // Uniform mapping: sprint unit s → pixel x (same scale everywhere)
+  function sprintX(s) {
+    return x0 + s * SPRINT_W;
+  }
+  function durPx(d) { return d * SPRINT_W; }
+
+  function hexToRgb(hex) {
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return `${r},${g},${b}`;
+  }
+  function clipText(text, maxW) {
+    if (ctx.measureText(text).width <= maxW) return text;
+    let t = text;
+    while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+    return t + '…';
+  }
+
+  // Build row list
+  const rows = [];
+  state.phases.forEach((ph, pi) => {
+    const ps = sched.find(s => s.phaseId === ph.id);
+    const color = ph.color || PHASE_COLORS[pi % PHASE_COLORS.length];
+    rows.push({ type: 'phase', ph, pi, ps, color });
+    if (mode !== 'summary') {
+      ph.epics.forEach(ep => {
+        rows.push({ type: 'epic', ph, ep, ps, color, epSched: ps?.epicSched?.[ep.id] });
+      });
+    }
+  });
+
+  const contentW = S0_W + numSprints * SPRINT_W;
+  const totalW = PAD + LABEL_W + contentW + PAD;
+  let totalH = PAD + TITLE_H + HDR_H;
+  rows.forEach(r => { totalH += r.type === 'phase' ? PHASE_H : EPIC_H; });
+  totalH += PAD;
+
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = totalW * dpr;
+  canvas.height = totalH * dpr;
+  canvas.style.width = totalW + 'px';
+  canvas.style.height = totalH + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // ── Background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, totalW, totalH);
+
+  // ── Title bar
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, totalW, TITLE_H);
+  ctx.fillStyle = '#F36C7B';
+  ctx.fillRect(0, TITLE_H - 3, totalW, 3);
+  ctx.font = 'bold 15px "Montserrat", Arial, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'left';
+  ctx.fillText(state.project.name || 'Project Roadmap', PAD, TITLE_H / 2 - 6);
+  ctx.font = '11px "Montserrat", Arial, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.fillText((state.project.client || '') + (state.project.kickoffDate ? '  ·  Kickoff: ' + state.project.kickoffDate : ''), PAD, TITLE_H / 2 + 9);
+
+  // ── Header background
+  const HY = TITLE_H;
+  ctx.fillStyle = '#f5f5f5';
+  ctx.fillRect(0, HY, totalW, HDR_H);
+
+  // ── Row 1: Month headers
+  const MY = HY;
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, MY, totalW, MONTH_H);
+  ctx.font = 'bold 9px "Montserrat", Arial, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  // Month 0 — spans SP0 column
+  ctx.fillText('Month 0', x0 + S0_W / 2, MY + MONTH_H / 2);
+  // Month 1, 2, ... — each covers 2 regular sprints
+  for (let m = 1; m <= Math.ceil(numSprints / 2); m++) {
+    const mStartUnit = sprint1StartUnit + (m - 1) * 2;
+    const mX = sprintX(mStartUnit);
+    const mW = Math.min(2, numSprints - (m - 1) * 2) * SPRINT_W;
+    ctx.fillText('Month ' + m, mX + mW / 2, MY + MONTH_H / 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(mX, MY); ctx.lineTo(mX, MY + MONTH_H); ctx.stroke();
+  }
+
+  // ── Row 2: Sprint headers
+  const SY = HY + MONTH_H;
+  ctx.fillStyle = '#333333';
+  ctx.fillRect(0, SY, totalW, SPRINT_H);
+  ctx.font = 'bold 9px "Montserrat", Arial, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  // SP 0 — spans the full S0_W
+  ctx.fillText('SP 0', x0 + S0_W / 2, SY + SPRINT_H / 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(x0 + S0_W, SY); ctx.lineTo(x0 + S0_W, SY + SPRINT_H); ctx.stroke();
+  // SP 1..N — start at sprint unit sprint1StartUnit + (s-1)
+  for (let s = 1; s <= numSprints; s++) {
+    const sx = sprintX(sprint1StartUnit + s - 1);
+    ctx.fillText('SP ' + s, sx + SPRINT_W / 2, SY + SPRINT_H / 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.beginPath(); ctx.moveTo(sx, SY); ctx.lineTo(sx, SY + SPRINT_H); ctx.stroke();
+  }
+
+  // ── Row 3: Week headers
+  const WY = HY + MONTH_H + SPRINT_H;
+  ctx.fillStyle = '#f5f5f5';
+  ctx.fillRect(0, WY, totalW, WEEK_H);
+  ctx.font = '8px "Montserrat", Arial, sans-serif';
+  ctx.textBaseline = 'middle';
+  // Sprint 0 weeks — sprint0DisplayCols week columns
+  for (let w = 1; w <= sprint0DisplayCols; w++) {
+    const wx = x0 + (w - 1) * WEEK_W;
+    ctx.fillStyle = '#888888';
+    ctx.textAlign = 'center';
+    ctx.fillText('w0.' + w, wx + WEEK_W / 2, WY + WEEK_H / 2);
+    ctx.strokeStyle = '#e3e3e3';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(wx, WY); ctx.lineTo(wx, totalH - PAD); ctx.stroke();
+  }
+  // Regular sprint weeks
+  let weekNum = 1;
+  for (let s = 1; s <= numSprints; s++) {
+    const sx = sprintX(sprint1StartUnit + s - 1);
+    ctx.fillStyle = '#888888';
+    ctx.textAlign = 'center';
+    ctx.fillText('w' + weekNum, sx + WEEK_W / 2, WY + WEEK_H / 2);
+    ctx.fillText('w' + (weekNum + 1), sx + WEEK_W * 1.5, WY + WEEK_H / 2);
+    // vertical grid lines
+    ctx.strokeStyle = '#e3e3e3';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(sx, WY); ctx.lineTo(sx, totalH - PAD); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sx + WEEK_W, WY); ctx.lineTo(sx + WEEK_W, totalH - PAD); ctx.stroke();
+    weekNum += 2;
+  }
+  // right edge
+  ctx.strokeStyle = '#e3e3e3';
+  ctx.beginPath(); ctx.moveTo(x0 + contentW, HY); ctx.lineTo(x0 + contentW, totalH - PAD); ctx.stroke();
+  // label separator
+  ctx.beginPath(); ctx.moveTo(x0, HY); ctx.lineTo(x0, totalH - PAD); ctx.stroke();
+  // header bottom border
+  ctx.strokeStyle = '#e3e3e3';
+  ctx.beginPath(); ctx.moveTo(0, HY + HDR_H); ctx.lineTo(totalW, HY + HDR_H); ctx.stroke();
+
+  // ── Rows
+  let rowY = TITLE_H + HDR_H;
+  rows.forEach((row, ri) => {
+    const rh = row.type === 'epic' ? EPIC_H : PHASE_H;
+    const midY = rowY + rh / 2;
+
+    ctx.fillStyle = ri % 2 === 0 ? '#fafafa' : '#ffffff';
+    ctx.fillRect(0, rowY, totalW, rh);
+    ctx.strokeStyle = '#f0f0f0';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, rowY + rh); ctx.lineTo(totalW, rowY + rh); ctx.stroke();
+
+    if (row.type === 'phase') {
+      const rgb = hexToRgb(row.color);
+      ctx.font = 'bold 12px "Montserrat", Arial, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      const dot = 8;
+      ctx.fillStyle = row.color;
+      ctx.beginPath(); ctx.arc(PAD + dot/2, midY, dot/2, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#000000';
+      ctx.fillText(clipText(row.ph.name || 'Unnamed', LABEL_W - PAD*2 - dot - 6), PAD + dot + 6, midY);
+
+      if (row.ps) {
+        const bx = sprintX(row.ps.start);
+        const bw = durPx(row.ps.end - row.ps.start);
+        const barH = rh - 10;
+        ctx.fillStyle = `rgba(${rgb},0.85)`;
+        ctx.beginPath(); ctx.roundRect(bx, rowY + 5, bw, barH, 3); ctx.fill();
+        const dur = row.ps.end - row.ps.start;
+        const label = dur < 1 ? `${Math.round(dur*2)}w` : `${dur} sprint${dur !== 1 ? 's' : ''}`;
+        ctx.font = 'bold 10px "Montserrat", Arial, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        if (bw > 36) ctx.fillText(clipText(label, bw - 8), bx + bw / 2, rowY + rh / 2);
+      }
+    } else if (row.type === 'epic') {
+      const rgb = hexToRgb(row.color);
+      ctx.font = '11px "Montserrat", Arial, sans-serif';
+      ctx.fillStyle = '#3a3a3a';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(clipText(row.ep.name || 'Unnamed epic', LABEL_W - PAD*2 - 20), PAD + 20, midY);
+
+      if (row.epSched) {
+        const bx = sprintX(row.epSched.start);
+        const bw = durPx(row.epSched.end - row.epSched.start);
+        const barH = rh - 8;
+        ctx.fillStyle = `rgba(${rgb},0.35)`;
+        ctx.beginPath(); ctx.roundRect(bx, rowY + 4, bw, barH, 3); ctx.fill();
+        ctx.strokeStyle = `rgba(${rgb},0.7)`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
+    rowY += rh;
+  });
+
+  // ── Footer line
+  ctx.strokeStyle = '#e3e3e3';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, totalH - PAD); ctx.lineTo(totalW, totalH - PAD); ctx.stroke();
+}
+
+function downloadCanvasImage(canvasId, suffix) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const fname = (state.project.name || 'Project').replace(/[^a-z0-9]/gi, '_');
+  const a = document.createElement('a');
+  a.download = `${fname}_${suffix}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+// ============================================================
+// EXCEL EXPORT (ExcelJS)
+// ============================================================
+async function exportToExcel() {
+  showToast('Generating Excel…');
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Mod Op Roadmap Tool';
+  wb.created = new Date();
+
+  buildBudgetSheet(wb);
+  buildRoadmapSheet(wb);
+  buildStaffSheet(wb);
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const fname = (state.project.name || 'Project').replace(/[^a-z0-9]/gi,'_');
+  a.download = `${fname}_Roadmap_Budget.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Excel downloaded!');
+}
+
+function cellStyle(opts={}) {
+  const base = {
+    font: { name:'Arial', size: 9 },
+    alignment: { vertical:'middle', wrapText: false }
+  };
+  if (opts.bold) base.font.bold = true;
+  if (opts.white) base.font.color = { argb:'FFFFFFFF' };
+  if (opts.bg) base.fill = { type:'pattern', pattern:'solid', fgColor:{ argb: opts.bg } };
+  if (opts.center) base.alignment.horizontal = 'center';
+  if (opts.right) base.alignment.horizontal = 'right';
+  if (opts.wrap) base.alignment.wrapText = true;
+  if (opts.border) base.border = {
+    top:{style:'thin',color:{argb:'FFD1D5DB'}},
+    bottom:{style:'thin',color:{argb:'FFD1D5DB'}},
+    left:{style:'thin',color:{argb:'FFD1D5DB'}},
+    right:{style:'thin',color:{argb:'FFD1D5DB'}}
+  };
+  if (opts.topBorder) base.border = { ...base.border, top:{style:'medium',color:{argb:'FF1a3a5c'}} };
+  return base;
+}
+
+function buildBudgetSheet(wb) {
+  const ws = wb.addWorksheet('Budget');
+  const sched = computeSchedule();
+
+  // Column widths
+  const colWidths = [22,16,18,16,10,10,10,7,8,7,12,12,8,12,12,14,14,14,10,12,16,16,10,8,12,16,16,10,8];
+  colWidths.forEach((w,i) => { ws.getColumn(i+1).width = w; });
+  ws.getRow(1).height = 28;
+  ws.getRow(2).height = 42;
+
+  const NAVY = 'FF000000', RED = 'FFF36C7B', LGRAY = 'FFF5F5F5', MGRAY = 'FFE3E3E3';
+
+  // Row 1: header groups
+  const grpHeaders = [
+    {col:1, span:7, label:'PROJECT TEAM'},
+    {col:9, span:4, label:'2-WEEK SPRINT TOTALS'},
+    {col:13,span:3, label:'HOURLY TOTALS'},
+    {col:16,span:4, label:'CONTRACTED SCOPE'},
+    {col:20,span:5, label:'PREDICTED SCOPE'},
+    {col:25,span:5, label:'ACTUAL SCOPE'},
+  ];
+  grpHeaders.forEach(g => {
+    ws.getCell(1, g.col).value = g.label;
+    ws.getCell(1, g.col).style = cellStyle({bold:true, white:true, bg:NAVY, center:true});
+    if (g.span > 1) ws.mergeCells(1, g.col, 1, g.col + g.span - 1);
+  });
+
+  // Row 2: column headers
+  const colHdrs = [
+    'Role','Resources in Group','Preferred Resource','Backup Resource',
+    'Mod Op Rate','MO Low Rate','Client Rate','Rate SLA?',
+    'FTE %','Sprints','Mod Op Total','Client Total',
+    'Hours','Mod Op Total','Client Total',
+    'Scoped Hours','Mod Op Scope','Client Scope','GPM',
+    'Predicted Hours','Pred. Client','Pred. MO Costs','Pred. GPM','Hrs SLA?',
+    'Actual Hours','Act. Client','Act. MO Costs','Act. GPM','Hrs SLA?'
+  ];
+  colHdrs.forEach((h,i) => {
+    const cell = ws.getCell(2, i+1);
+    cell.value = h;
+    cell.style = cellStyle({bold:true, bg:LGRAY, center:true, wrap:true, border:true});
+  });
+
+  // Row 3: PROJECT PLAN totals row
+  const totalRow = ws.getRow(3);
+  totalRow.getCell(1).value = 'PROJECT PLAN';
+  totalRow.getCell(1).style = cellStyle({bold:true, bg:'FFFEF3C7'});
+  ws.getRow(3).height = 18;
+
+  // Calculate overall totals
+  let grandMO=0, grandClient=0, grandHours=0;
+
+  let dataRowStart = 4;
+
+  state.phases.forEach((ph, pi) => {
+    const ps = sched.find(s=>s.phaseId===ph.id);
+    const suggestSprints = ps ? ps.end - ps.start : 1;
+    const phColor = ph.color ? ph.color.replace('#','FF') : PHASE_COLORS[pi%PHASE_COLORS.length].replace('#','FF');
+
+    // Phase header row
+    const phRow = ws.getRow(dataRowStart);
+    phRow.height = 18;
+    const phCell = phRow.getCell(1);
+    phCell.value = (ph.name || `Phase ${pi+1}`).toUpperCase();
+    phCell.style = cellStyle({bold:true, bg:'FF1a1f2e', white:true});
+    ws.mergeCells(dataRowStart, 1, dataRowStart, 3);
+
+    // Phase description
+    phRow.getCell(3).value = ''; // covered by merge
+    phRow.getCell(4).value = 'Phase description:';
+    phRow.getCell(4).style = cellStyle({});
+
+    // Phase subtotal formulas
+    const resStart = dataRowStart + 1;
+    const resEnd = dataRowStart + 8;
+    phRow.getCell(9).value = { formula: `SUM(I${resStart}:I${resEnd})` };
+    phRow.getCell(10).value = { formula: `SUM(J${resStart}:J${resEnd})` };
+    phRow.getCell(11).value = { formula: `SUM(K${resStart}:K${resEnd})` };
+    phRow.getCell(12).value = { formula: `SUM(L${resStart}:L${resEnd})` };
+    [9,10,11,12].forEach(c => { phRow.getCell(c).style = cellStyle({bold:true, bg:'FF1a1f2e', white:true, right:true}); phRow.getCell(c).numFmt = '$#,##0'; });
+
+    dataRowStart++;
+
+    // Resource rows (8 per phase)
+    let phaseMO=0, phaseClient=0, phaseHours=0;
+    for (let ri = 0; ri < 8; ri++) {
+      const r = ph.resources[ri] || {};
+      const row = ws.getRow(dataRowStart);
+      row.height = 16;
+
+      const staffEntry = state.staff.find(s=>s.position===r.role);
+      const moRate = staffEntry ? staffEntry.targetRate : null;
+      const moLow = staffEntry ? staffEntry.lowRate : null;
+      const fteRaw = parseFloat(r.fte)||null;          // stored as whole number (e.g. 50 = 50%)
+      const fte = fteRaw != null ? fteRaw / 100 : null; // decimal for calculations
+      const sprints = parseFloat(r.sprints)||null;
+      const clientRate = parseFloat(r.clientRate)||null;
+
+      row.getCell(1).value = r.role || null;          // Role
+      row.getCell(2).value = staffEntry ? staffEntry.resource.split(' / ')[0] : null; // Resources group
+      row.getCell(3).value = r.preferredResource || null;
+      row.getCell(4).value = r.backupResource || null;
+      row.getCell(5).value = moRate;                  // MO Rate
+      row.getCell(6).value = moLow;                   // MO Low Rate
+      row.getCell(7).value = clientRate;              // Client Rate
+      row.getCell(8).value = r.role && clientRate && moLow ? (clientRate < moLow ? 'YES' : '-') : null; // SLA
+      row.getCell(9).value = fte;                     // FTE% as decimal for Excel
+      row.getCell(10).value = sprints;                // Sprints
+
+      // Calculated: MO Sprint Total = MO Rate * 80 * FTE * Sprints
+      if (moRate && fte && sprints) {
+        row.getCell(11).value = { formula: `IFERROR((E${dataRowStart}*80)*I${dataRowStart}*J${dataRowStart},"")` };
+        row.getCell(12).value = clientRate ? { formula: `(G${dataRowStart}*80)*I${dataRowStart}*J${dataRowStart}` } : null;
+        const h = fte * sprints * 80;
+        row.getCell(13).value = { formula: `I${dataRowStart}*J${dataRowStart}*80` };
+        row.getCell(14).value = { formula: `IFERROR(E${dataRowStart}*M${dataRowStart},"")` };
+        row.getCell(15).value = clientRate ? { formula: `G${dataRowStart}*M${dataRowStart}` } : null;
+        phaseMO += (moRate * 80 * fte * sprints);
+        phaseClient += clientRate ? (clientRate * 80 * fte * sprints) : 0;
+        phaseHours += h;
+      }
+
+      // Style number cells
+      [5,6,7].forEach(c => { if(row.getCell(c).value) { row.getCell(c).numFmt = '$#,##0'; row.getCell(c).style = cellStyle({right:true}); } });
+      [9].forEach(c => { if(row.getCell(c).value) { row.getCell(c).numFmt = '0%'; row.getCell(c).style = cellStyle({center:true}); } });
+      [11,12,13,14,15].forEach(c => { row.getCell(c).numFmt = '$#,##0'; row.getCell(c).style = cellStyle({right:true}); });
+
+      // Alternate row bg
+      if (ri % 2 === 1) {
+        for(let c=1;c<=15;c++) {
+          if (!row.getCell(c).style.fill) row.getCell(c).style = {...row.getCell(c).style, fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFF9FAFB'}}};
+        }
+      }
+
+      grandMO += phaseMO;
+      grandClient += phaseClient;
+      grandHours += phaseHours;
+      dataRowStart++;
+    }
+  });
+
+  // Fill in PROJECT PLAN totals
+  ws.getRow(3).getCell(11).value = grandMO;
+  ws.getRow(3).getCell(12).value = grandClient;
+  ws.getRow(3).getCell(13).value = grandHours;
+  [11,12,13,14,15].forEach(c => { ws.getRow(3).getCell(c).numFmt = '$#,##0'; ws.getRow(3).getCell(c).style = cellStyle({bold:true, bg:'FFFEF3C7', right:true}); });
+
+  // Freeze top 3 rows + col 1
+  ws.views = [{ state:'frozen', xSplit:1, ySplit:3 }];
+}
+
+function buildRoadmapSheet(wb) {
+  const ws = wb.addWorksheet('Roadmap');
+  const numSprints = parseInt(state.project.numSprints) || 12;
+  const sprint0Weeks = parseInt(state.project.sprint0Weeks) || 4;
+  const sched = computeSchedule();
+  const NAVY = 'FF000000';
+
+  // Column setup: col 1 = label, cols 2..1+sprint0Weeks = Sprint 0 weeks, then 2 cols per sprint
+  ws.getColumn(1).width = 28;
+  for (let w = 1; w <= sprint0Weeks; w++) ws.getColumn(1 + w).width = 7;
+  for (let s = 1; s <= numSprints; s++) {
+    ws.getColumn(1 + sprint0Weeks + (s-1)*2 + 1).width = 8;
+    ws.getColumn(1 + sprint0Weeks + (s-1)*2 + 2).width = 8;
+  }
+
+  // sprintCol(0) = col 2 (first Sprint 0 week), sprintCol(s) = first col of sprint s
+  function sprintCol(s) {
+    if (s <= 0) return 2;
+    return 2 + sprint0Weeks + (s - 1) * 2;
+  }
+  const totalCols = 1 + sprint0Weeks + numSprints * 2;
+  const hdrStyle = (bg) => ({fill:{type:'pattern',pattern:'solid',fgColor:{argb:bg}},font:{color:{argb:'FFFFFFFF'},bold:true,name:'Arial',size:9},alignment:{horizontal:'center',vertical:'middle'}});
+  const darkStyle = hdrStyle(NAVY), midStyle = hdrStyle('FF333333'), weekStyle = {fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFf5f5f5'}},font:{color:{argb:'FF888888'},name:'Arial',size:8},alignment:{horizontal:'center',vertical:'middle'}};
+
+  // Row 1: Month headers
+  ws.getRow(1).height = 16;
+  ws.getCell(1,1).value = ''; ws.getCell(1,1).style = darkStyle;
+  ws.getCell(1,2).value = 'Month 0'; ws.getCell(1,2).style = darkStyle;
+  if (sprint0Weeks > 1) ws.mergeCells(1, 2, 1, 1 + sprint0Weeks);
+  for (let m = 1; m <= Math.ceil(numSprints/2); m++) {
+    const s1 = (m-1)*2+1, s2 = Math.min(s1+1,numSprints);
+    const c1 = sprintCol(s1), c2 = sprintCol(s2)+1;
+    ws.getCell(1,c1).value = `Month ${m}`; ws.getCell(1,c1).style = darkStyle;
+    if(c2 > c1) ws.mergeCells(1,c1,1,c2);
+  }
+
+  // Row 2: Sprint headers
+  ws.getRow(2).height = 14;
+  ws.getCell(2,1).value = 'TASK / PHASE'; ws.getCell(2,1).style = darkStyle;
+  ws.getCell(2,2).value = 'SPRINT 0'; ws.getCell(2,2).style = midStyle;
+  if (sprint0Weeks > 1) ws.mergeCells(2, 2, 2, 1 + sprint0Weeks);
+  for (let s = 1; s <= numSprints; s++) {
+    const c = sprintCol(s);
+    ws.getCell(2,c).value = `SPRINT ${s}`; ws.getCell(2,c).style = midStyle;
+    if(c+1 <= totalCols) ws.mergeCells(2,c,2,c+1);
+  }
+
+  // Row 3: Week headers
+  ws.getRow(3).height = 12;
+  ws.getCell(3,1).style = weekStyle;
+  for (let w = 1; w <= sprint0Weeks; w++) {
+    ws.getCell(3, 1 + w).value = `w0.${w}`; ws.getCell(3, 1 + w).style = weekStyle;
+  }
+  let wn = 1;
+  for (let s = 1; s <= numSprints; s++) {
+    const c = sprintCol(s);
+    ws.getCell(3,c).value = `w${wn}`; ws.getCell(3,c).style = weekStyle;
+    ws.getCell(3,c+1).value = `w${wn+1}`; ws.getCell(3,c+1).style = weekStyle;
+    wn += 2;
+  }
+
+  let currentRow = 4;
+  const phaseColorMap = {};
+  state.phases.forEach((ph,pi) => { phaseColorMap[ph.id] = (ph.color||PHASE_COLORS[pi%PHASE_COLORS.length]).replace('#','FF'); });
+
+  sched.forEach((ps) => {
+    const phase = state.phases.find(p=>p.id===ps.phaseId);
+    if(!phase) return;
+    const color = phaseColorMap[phase.id];
+    const alphaColor = color.replace(/^FF/,'4D');
+
+    ws.getRow(currentRow).height = 18;
+    ws.getCell(currentRow,1).value = (phase.name||'Phase').toUpperCase();
+    ws.getCell(currentRow,1).style = {fill:{type:'pattern',pattern:'solid',fgColor:{argb:color}},font:{color:{argb:'FFFFFFFF'},bold:true,name:'Arial',size:9}};
+
+    const pStartCol = sprintCol(ps.start <= 0 ? 0 : Math.min(ps.start, numSprints));
+    const pEndCol = Math.min(sprintCol(Math.min(Math.ceil(ps.end), numSprints)), totalCols);
+    for(let c=pStartCol; c<=pEndCol; c++) {
+      ws.getCell(currentRow,c).style = {fill:{type:'pattern',pattern:'solid',fgColor:{argb:color}}};
+      ws.getCell(currentRow,c).font = {color:{argb:'FFFFFFFF'},bold:true,name:'Arial',size:9};
+    }
+    if(pStartCol < pEndCol) ws.mergeCells(currentRow,pStartCol,currentRow,pEndCol);
+    ws.getCell(currentRow,pStartCol).value = phase.name;
+    currentRow++;
+
+    phase.epics.forEach(ep => {
+      const es = ps.epicSched[ep.id];
+      if(!es) return;
+      ws.getRow(currentRow).height = 15;
+      ws.getCell(currentRow,1).value = '    ' + (ep.name||'Epic');
+      ws.getCell(currentRow,1).style = {font:{name:'Arial',size:9,italic:true,color:{argb:'FF374151'}}};
+
+      const eStartCol = sprintCol(es.start <= 0 ? 0 : Math.min(es.start, numSprints));
+      const eColSpan = Math.min(Math.round((ep.duration||1)*2), totalCols - eStartCol + 1);
+      const eEndCol = Math.min(eStartCol + eColSpan - 1, totalCols);
+
+      for(let c=eStartCol; c<=eEndCol; c++) ws.getCell(currentRow,c).style = {fill:{type:'pattern',pattern:'solid',fgColor:{argb:alphaColor}}};
+      if(eStartCol<eEndCol) ws.mergeCells(currentRow,eStartCol,currentRow,eEndCol);
+      const durLabel = es.start <= 0
+        ? `${Math.round((ep.duration||1)*2)}w`
+        : (DURATION_OPTIONS.find(d=>d.v===ep.duration)?.l || `${ep.duration} sp`);
+      ws.getCell(currentRow,eStartCol).value = ep.name ? `${ep.name} (${durLabel})` : durLabel;
+      ws.getCell(currentRow,eStartCol).font = {name:'Arial',size:9,color:{argb:color}};
+      ws.getCell(currentRow,eStartCol).alignment = {horizontal:'left',vertical:'middle'};
+      currentRow++;
+    });
+  });
+
+  ws.views = [{ state:'frozen', xSplit:1, ySplit:3 }];
+}
+
+function buildStaffSheet(wb) {
+  const ws = wb.addWorksheet('List-Staff');
+  const NAVY = 'FF000000';
+
+  ws.getColumn(1).width = 18;
+  ws.getColumn(2).width = 32;
+  ws.getColumn(3).width = 32;
+  ws.getColumn(4).width = 14;
+  ws.getColumn(5).width = 14;
+  ws.getColumn(6).width = 14;
+
+  const hdrs = ['GROUP','POSITION','RESOURCE','TARGET RATE','VIABLE RATE: LOW','VIABLE RATE: HIGH'];
+  hdrs.forEach((h,i) => {
+    ws.getCell(1,i+1).value = h;
+    ws.getCell(1,i+1).style = {fill:{type:'pattern',pattern:'solid',fgColor:{argb:NAVY}},font:{color:{argb:'FFFFFFFF'},bold:true,name:'Arial',size:9},alignment:{horizontal:'center',vertical:'middle'}};
+  });
+  ws.getRow(1).height = 18;
+
+  state.staff.forEach((s,i) => {
+    const row = ws.getRow(i+2);
+    row.height = 14;
+    row.getCell(1).value = s.group;
+    row.getCell(2).value = s.position;
+    row.getCell(3).value = s.resource;
+    row.getCell(4).value = s.targetRate;
+    row.getCell(5).value = s.lowRate;
+    row.getCell(6).value = s.highRate;
+    [4,5,6].forEach(c => { row.getCell(c).numFmt = '$#,##0'; row.getCell(c).style = {font:{name:'Arial',size:9},alignment:{horizontal:'right'}}; });
+    [1,2,3].forEach(c => { row.getCell(c).style = {font:{name:'Arial',size:9}}; });
+    if (i%2===1) {
+      for(let c=1;c<=6;c++) row.getCell(c).fill = {type:'pattern',pattern:'solid',fgColor:{argb:'FFF9FAFB'}};
+    }
+  });
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  if (toastTimer) clearTimeout(toastTimer);
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  toastTimer = setTimeout(() => t.remove(), 2800);
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function getStaffForRole(position) {
+  return state.staff.find(s => s.position === position) || null;
+}
+
+// ============================================================
+// EVENT HANDLERS
+// ============================================================
+function attachEventListeners() {
+  // Sidebar navigation
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.onclick = () => navigate(el.dataset.view);
+  });
+
+  // Roadmap tabs
+  document.querySelectorAll('.rm-tab').forEach(el => {
+    el.onclick = () => { roadmapTab = el.dataset.rmtab; renderView(); };
+  });
+
+  // Setup: project fields
+  document.querySelectorAll('[data-field]').forEach(el => {
+    if (!el.dataset.phaseId && !el.dataset.staffId && !el.dataset.epicId && !el.dataset.resourceId) {
+      el.oninput = el.onchange = () => {
+        const f = el.dataset.field;
+        if (f in state.project) { state.project[f] = el.value; save(); updateTopbarMeta(); }
+      };
+    }
+  });
+
+  // Setup: phase name editing
+  document.querySelectorAll('[data-field="phaseName"]').forEach(el => {
+    el.oninput = () => {
+      const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+      if(ph) { ph.name = el.value; save(); }
+    };
+  });
+
+  // Roadmap: phase scheduling fields (startSprint, phaseDepId)
+  document.querySelectorAll('[data-field="startSprint"],[data-field="phaseDepId"]').forEach(el => {
+    const handler = () => {
+      const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+      if(!ph) return;
+      if(el.dataset.field === 'startSprint') {
+        ph.startSprint = el.value !== '' ? parseInt(el.value) : null;
+      } else if(el.dataset.field === 'phaseDepId') {
+        if(!ph.deps) ph.deps = [];
+        const di = parseInt(el.dataset.depIdx);
+        if(!ph.deps[di]) ph.deps[di] = {id:''};
+        ph.deps[di].id = el.value;
+      }
+      save(); renderView();
+    };
+    el.tagName === 'SELECT' ? (el.onchange = handler) : (el.oninput = handler, el.onblur = handler);
+  });
+
+  // Setup: add phase
+  const addPhaseBtn = document.getElementById('add-phase-btn');
+  if (addPhaseBtn) addPhaseBtn.onclick = () => {
+    const idx = state.phases.length;
+    state.phases.push({ id:uid(), name:`Phase ${idx+1}`, color:PHASE_COLORS[idx%PHASE_COLORS.length], description:'', epics:[], resources:[], deps:[], startSprint:null });
+    save(); renderView();
+  };
+
+  // Staff: field edits
+  document.querySelectorAll('[data-staff-id]').forEach(el => {
+    el.oninput = el.onchange = () => {
+      const s = state.staff.find(x=>x.id===el.dataset.staffId);
+      if(s) {
+        const f = el.dataset.field;
+        s[f] = ['targetRate','lowRate','highRate'].includes(f) ? parseFloat(el.value)||0 : el.value;
+        save();
+      }
+    };
+  });
+
+  // Staff: add custom row
+  const addStaffBtn = document.getElementById('add-staff-btn');
+  if (addStaffBtn) addStaffBtn.onclick = () => {
+    state.staff.push({id:uid(),group:'Development',position:'New Role',resource:'TBD',targetRate:0,lowRate:0,highRate:0});
+    save(); renderView();
+  };
+
+  // Roadmap: epic fields
+  document.querySelectorAll('[data-epic-id]').forEach(el => {
+    el.oninput = el.onchange = () => {
+      const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+      if(!ph) return;
+      const ep = ph.epics.find(e=>e.id===el.dataset.epicId);
+      if(!ep) return;
+      if(!ep.deps) ep.deps = [];
+      const f = el.dataset.field;
+      if(f==='epicName') { ep.name = el.value; save(); return; }
+      else if(f==='epicDuration') { ep.duration = parseFloat(el.value)||1; save(); renderView(); return; }
+      else if(f==='depId' || f==='depType') {
+        const di = parseInt(el.dataset.depIdx);
+        if(!ep.deps[di]) ep.deps[di] = {id:'', type:'fs'};
+        if(f==='depId') ep.deps[di].id = el.value;
+        else ep.deps[di].type = el.value;
+        save(); renderView(); return;
+      }
+      save();
+    };
+  });
+
+  // Budget: resource fields — selects re-render; text/number inputs just save (fixes FTE re-render bug)
+  document.querySelectorAll('[data-resource-id]').forEach(el => {
+    const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+    if(!ph) return;
+    const saveField = () => {
+      let r = ph.resources.find(x=>x.id===el.dataset.resourceId);
+      if(!r) return;
+      r[el.dataset.field] = el.value;
+    };
+    if (el.tagName === 'SELECT') {
+      el.onchange = () => {
+        let r = ph.resources.find(x=>x.id===el.dataset.resourceId);
+        if(!r) return;
+        r[el.dataset.field] = el.value;
+        if(el.dataset.field==='role') {
+          const staffEntry = getStaffForRole(el.value);
+          if(staffEntry && !r.preferredResource) r.preferredResource = staffEntry.resource.split(' / ')[0];
+          if(staffEntry && !r.clientRate) r.clientRate = staffEntry.targetRate;
+        }
+        save(); renderView();
+      };
+    } else {
+      el.oninput = saveField;
+      el.onblur = () => { saveField(); save(); renderView(); };
+    }
+  });
+
+  // Export
+  const exportBtn = document.getElementById('export-excel-btn');
+  if (exportBtn) exportBtn.onclick = exportToExcel;
+
+  const dlSummaryBtn = document.getElementById('download-summary-img-btn');
+  if (dlSummaryBtn) dlSummaryBtn.onclick = () => downloadCanvasImage('summary-canvas', 'Roadmap_Summary');
+  const dlDetailedBtn = document.getElementById('download-detailed-img-btn');
+  if (dlDetailedBtn) dlDetailedBtn.onclick = () => downloadCanvasImage('detailed-canvas', 'Roadmap_Detailed');
+
+  if (document.getElementById('summary-canvas')) drawRoadmapCanvas('summary-canvas', 'summary');
+  if (document.getElementById('detailed-canvas')) drawRoadmapCanvas('detailed-canvas', 'detailed');
+
+  // Action buttons (delete phase, delete epic, delete staff, move phase)
+  document.querySelectorAll('[data-action]').forEach(el => {
+    el.onclick = () => {
+      const action = el.dataset.action;
+      if (action === 'add-epic') {
+        const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+        if(ph) { ph.epics.push({id:uid(),name:'',duration:1,deps:[]}); save(); renderView(); }
+      }
+      else if (action === 'add-phase-dep') {
+        const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+        if(ph) { if(!ph.deps) ph.deps=[]; ph.deps.push({id:''}); save(); renderView(); }
+      }
+      else if (action === 'del-phase-dep') {
+        const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+        if(ph) { ph.deps.splice(parseInt(el.dataset.depIdx),1); save(); renderView(); }
+      }
+      else if (action === 'add-epic-dep') {
+        const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+        const ep = ph?.epics.find(e=>e.id===el.dataset.epicId);
+        if(ep) { if(!ep.deps) ep.deps=[]; ep.deps.push({id:'',type:'fs'}); save(); renderView(); }
+      }
+      else if (action === 'del-epic-dep') {
+        const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+        const ep = ph?.epics.find(e=>e.id===el.dataset.epicId);
+        if(ep) { ep.deps.splice(parseInt(el.dataset.depIdx), 1); save(); renderView(); }
+      }
+      else if (action === 'add-resource') {
+        const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+        if(ph) { ph.resources.push({id:uid(),role:'',epicId:'',preferredResource:'',backupResource:'',clientRate:'',fte:'',sprints:''}); save(); renderView(); }
+      }
+      else if (action === 'del-resource') {
+        const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+        if(ph) { ph.resources = ph.resources.filter(r=>r.id!==el.dataset.resourceId); save(); renderView(); }
+      }
+      else if (action === 'del-phase') {
+        if (confirm('Remove this phase and all its epics/resources?')) {
+          state.phases = state.phases.filter(p=>p.id!==el.dataset.phaseId);
+          save(); renderView();
+        }
+      }
+      else if (action === 'del-epic') {
+        const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+        if(ph) { ph.epics = ph.epics.filter(e=>e.id!==el.dataset.epicId); save(); renderView(); }
+      }
+      else if (action === 'add-staff-role') {
+        const src = DEFAULT_STAFF.find(s => s.id === el.dataset.srcId);
+        if (src) { state.staff.push({...JSON.parse(JSON.stringify(src)), id: uid(), _srcId: src.id}); save(); renderView(); }
+      }
+      else if (action === 'del-staff') {
+        state.staff = state.staff.filter(s=>s.id!==el.dataset.staffId);
+        save(); renderView();
+      }
+      else if (action === 'move-epic-up') {
+        const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+        if(ph) { const i=ph.epics.findIndex(e=>e.id===el.dataset.epicId); if(i>0){[ph.epics[i-1],ph.epics[i]]=[ph.epics[i],ph.epics[i-1]];save();renderView();} }
+      }
+      else if (action === 'move-epic-down') {
+        const ph = state.phases.find(p=>p.id===el.dataset.phaseId);
+        if(ph) { const i=ph.epics.findIndex(e=>e.id===el.dataset.epicId); if(i<ph.epics.length-1){[ph.epics[i],ph.epics[i+1]]=[ph.epics[i+1],ph.epics[i]];save();renderView();} }
+      }
+      else if (action === 'move-phase-up') {
+        const i = state.phases.findIndex(p=>p.id===el.dataset.phaseId);
+        if(i>0) { [state.phases[i-1],state.phases[i]]=[state.phases[i],state.phases[i-1]]; save(); renderView(); }
+      }
+      else if (action === 'move-phase-down') {
+        const i = state.phases.findIndex(p=>p.id===el.dataset.phaseId);
+        if(i<state.phases.length-1) { [state.phases[i],state.phases[i+1]]=[state.phases[i+1],state.phases[i]]; save(); renderView(); }
+      }
+    };
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+load();
+navigate('setup');
+</script>
+</body>
+</html>
